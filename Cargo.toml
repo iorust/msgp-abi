@@ -1,0 +1,12 @@
+[package]
+name = "msgp-abi"
+version = "0.1.0"
+authors = ["zensh <admin@zensh.com>"]
+
+[dependencies]
+msgp = "0.1.0"
+libc = "0.2.14"
+
+[lib]
+# dylib, rlib, staticlib
+crate-type = ["dylib"]

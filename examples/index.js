@@ -21,6 +21,16 @@ const lib = ffi.Library('../target/release/libmsgp_abi.dylib', {
   drop_decoder: ['void', ['pointer']]
 })
 
+Buf.prototype.toBuffer = function () {
+  let buf = new Buffer(this.len)
+  for (let i = 0, len = this.len; i < len; i++) buf[i] = this.ptr[i]
+  return buf
+}
+
+Buf.prototype.toString = function () {
+  return this.toBuffer().toString()
+}
+
 class Msgp extends EventEmitter {
   constructor () {
     super()
@@ -30,24 +40,17 @@ class Msgp extends EventEmitter {
   }
 
   static encode (buffer) {
-    let arr = new U8Array(buffer)
-    let res = lib.encode(new Buf({ptr: arr, len: buffer.length}))
-    let buf = new Buffer(res.len)
-    for (let i = 0; i < res.len; i++) buf[i] = res.ptr[i]
-    console.log(100, buf.length, buf)
-    return buf
+    let res = lib.encode(new Buf({ptr: new U8Array(buffer), len: buffer.length}))
+    return res.toBuffer()
   }
 
   static decode (buffer) {
-    let arr = new U8Array(buffer)
-    let res = lib.decode(new Buf({ptr: arr, len: buffer.length}))
-    console.log(222, res)
-    return res
+    let res = lib.decode(new Buf({ptr: new U8Array(buffer), len: buffer.length}))
+    return res.toBuffer()
   }
 
   write (buffer) {
-    let arr = new U8Array(buffer)
-    let res = lib.feed_decoder(this.ptr, new Buf({ptr: arr, len: buffer.length}))
+    let res = lib.feed_decoder(this.ptr, new Buf({ptr: new U8Array(buffer), len: buffer.length}))
     console.log(333, res)
     res = lib.read_decoder()
     console.log(444, res)

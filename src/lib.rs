@@ -17,6 +17,7 @@ use libc::{uint8_t, size_t};
 
 // A struct that can be passed between C and Rust
 #[repr(C)]
+#[derive(Debug)]
 pub struct Buf {
     ptr: *const uint8_t,
     len: size_t,
@@ -24,14 +25,22 @@ pub struct Buf {
 
 #[no_mangle]
 pub extern fn encode(buf: Buf) -> Buf {
+    println!("buf {:?}", buf);
+
     let val: &[u8] = unsafe {
         assert!(!buf.ptr.is_null());
         slice::from_raw_parts(buf.ptr, buf.len as usize)
     };
 
+    println!("val {:?}", val);
     let res = msgp::encode(val);
     let len = res.len();
-    Buf { ptr: res.as_ptr(), len: len }
+    println!("res {:?}", res);
+
+    let r = Buf { ptr: res.as_ptr(), len: len as size_t };
+    println!("ptr {:p}", r.ptr);
+    println!("reres {:?}", unsafe { slice::from_raw_parts(r.ptr, len) });
+    r
 }
 
 #[no_mangle]
@@ -43,10 +52,10 @@ pub extern fn decode(buf: Buf) -> Buf {
 
     if let Some(res) = msgp::decode(val) {
         let len = res.len();
-        return Buf { ptr: res.as_ptr(), len: len };
+        return Buf { ptr: res.as_ptr(), len: len as size_t };
     }
 
-    Buf { ptr: [].as_ptr(), len: 0 }
+    Buf { ptr: [].as_ptr(), len: 0 as size_t }
 }
 
 #[no_mangle]
@@ -65,7 +74,7 @@ pub extern fn feed_decoder(ptr: *mut msgp::Decoder, buf: Buf) -> size_t {
     if let Ok(size) = decoder.feed(val) {
         return size;
     }
-    0
+    0 as size_t
 }
 
 #[no_mangle]
@@ -73,21 +82,21 @@ pub extern fn read_decoder(ptr: *mut msgp::Decoder) -> Buf {
     let mut decoder = unsafe { &mut *ptr };
     if let Some(res) = decoder.read() {
         let len = res.len();
-        return Buf { ptr: res.as_ptr(), len: len };
+        return Buf { ptr: res.as_ptr(), len: len as size_t };
     }
-    Buf { ptr: [].as_ptr(), len: 0 }
+    Buf { ptr: [].as_ptr(), len: 0 as size_t }
 }
 
 #[no_mangle]
 pub extern fn get_decoder_buffer_len(ptr: *const msgp::Decoder) -> size_t {
     let decoder = unsafe { &*ptr };
-    decoder.buffer_len()
+    decoder.buffer_len() as size_t
 }
 
 #[no_mangle]
 pub extern fn get_decoder_result_len(ptr: *const msgp::Decoder) -> size_t {
     let decoder = unsafe { &*ptr };
-    decoder.result_len()
+    decoder.result_len() as size_t
 }
 
 #[no_mangle]

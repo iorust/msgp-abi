@@ -4,9 +4,8 @@ const ffi = require('ffi')
 const ref = require('ref')
 const struct = require('ref-struct')
 const EventEmitter = require('events')
-const U8Array = require('ref-array')(ref.types.uint8)
 const Buf = struct({
-  ptr: U8Array,
+  ptr: ref.refType(ref.types.uint8),
   len: ref.types.size_t
 })
 
@@ -22,9 +21,8 @@ const lib = ffi.Library('../target/release/libmsgp_abi.dylib', {
 })
 
 Buf.prototype.toBuffer = function () {
-  let buf = new Buffer(this.len)
-  for (let i = 0, len = this.len; i < len; i++) buf[i] = this.ptr[i]
-  return buf
+  console.log(111, this)
+  return ref.reinterpret(this.ptr, this.len, 0)
 }
 
 Buf.prototype.toString = function () {
@@ -40,17 +38,17 @@ class Msgp extends EventEmitter {
   }
 
   static encode (buffer) {
-    let res = lib.encode(new Buf({ptr: new U8Array(buffer), len: buffer.length}))
+    let res = lib.encode(new Buf({ptr: buffer, len: buffer.length}))
     return res.toBuffer()
   }
 
   static decode (buffer) {
-    let res = lib.decode(new Buf({ptr: new U8Array(buffer), len: buffer.length}))
+    let res = lib.decode(new Buf({ptr: buffer, len: buffer.length}))
     return res.toBuffer()
   }
 
   write (buffer) {
-    let res = lib.feed_decoder(this.ptr, new Buf({ptr: new U8Array(buffer), len: buffer.length}))
+    let res = lib.feed_decoder(this.ptr, new Buf({ptr: buffer, len: buffer.length}))
     console.log(333, res)
     res = lib.read_decoder()
     console.log(444, res)

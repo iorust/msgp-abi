@@ -22,7 +22,7 @@ const lib = ffi.Library('../../target/release/libmsgp_abi.dylib', {
 })
 
 Buf.prototype.toBuffer = function () {
-  return this.len ? ref.reinterpret(this.ptr, this.len, 0) : null
+  return ref.isNull(this.ptr) ? null : ref.reinterpret(this.ptr, this.len, 0)
 }
 
 Buf.prototype.toString = function () {

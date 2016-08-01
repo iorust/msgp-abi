@@ -10,6 +10,7 @@
 extern crate libc;
 extern crate msgp;
 
+use std::ptr;
 use std::slice;
 use std::mem::{transmute, forget, drop};
 
@@ -53,7 +54,7 @@ pub extern fn decode(buf: Buf) -> Buf {
         return Buf { ptr: ptr, len: len };
     }
 
-    Buf { ptr: [].as_ptr(), len: 0 }
+    Buf { ptr: ptr::null(), len: 0 }
 }
 
 #[no_mangle]
@@ -84,7 +85,7 @@ pub extern fn read_decoder(ptr: *mut msgp::Decoder) -> Buf {
         forget(res);
         return Buf { ptr: ptr, len: len };
     }
-    Buf { ptr: [].as_ptr(), len: 0 }
+    Buf { ptr: ptr::null(), len: 0 }
 }
 
 #[no_mangle]
@@ -101,7 +102,6 @@ pub extern fn get_decoder_result_len(ptr: *const msgp::Decoder) -> size_t {
 
 #[no_mangle]
 pub extern fn drop_decoder(ptr: *mut msgp::Decoder) {
-    drop(ptr);
-    // let mut decoder: Box<msgp::Decoder> = unsafe { transmute(ptr) };
-    // Drop
+    let decoder: Box<msgp::Decoder> = unsafe { transmute(ptr) };
+    drop(decoder);
 }

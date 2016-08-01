@@ -1,6 +1,6 @@
 [package]
 name = "msgp-abi"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["zensh <admin@zensh.com>"]
 description = "ABI of msgp(Byte message protocol)."
 documentation = "https://iorust.github.io/msgp-abi/msgp_abi"
